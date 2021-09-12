@@ -1,0 +1,7 @@
+__pycache__
+.ipynb_checkpoints
+.vscode
+nanoshaper
+plots
+Molecule_Calculations.ipynb
+5pti_d1.msh
