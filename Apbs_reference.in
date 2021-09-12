@@ -1,0 +1,50 @@
+read
+mol pqr "1lyz_amber.pqr"
+
+end
+
+elec name reference
+mg-manual
+dime 129 129 129
+glen 50 50 50
+lpbe
+pdie 4.0
+sdie 4.0
+bcfl mdh
+gcent mol 1
+mol 1
+chgm spl2
+srfm spl2
+srad 1.4
+swin 0.3
+sdens 10.0
+temp 298.15
+calcenergy total
+calcforce total
+end
+
+elec name solvated
+mg-manual
+dime 129 129 129
+glen 50 50 50
+lpbe
+pdie 4.0
+sdie 80.0
+bcfl mdh
+ion 1.0 0.150 1.4
+ion -1.0 0.150 1.4
+gcent mol 1
+mol 1
+chgm spl2
+srfm spl2
+srad 1.4
+swin 0.3
+sdens 10.0
+temp 298.15
+calcenergy total
+calcforce total
+end
+
+print elecEnergy solvated - reference end
+
+quit
