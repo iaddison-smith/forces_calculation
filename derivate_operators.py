@@ -1,7 +1,7 @@
+
 import numpy as np
 import os
 import bempp.api
-
 
 def solvent_potential_first_derivate(xq, h, neumann_space, dirichl_space, solution_neumann, solution_dirichl):
     """
@@ -52,3 +52,4 @@ def solvent_potential_first_derivate(xq, h, neumann_space, dirichl_space, soluti
     dpdr[:,2] = dpdz
 
     return dpdr
+ 
