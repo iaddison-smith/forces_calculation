@@ -93,7 +93,7 @@ h=0.001
 grad_phi = solvent_potential_first_derivate(x_q, h, neumann_space, dirichl_space, solution_neumann, solution_dirichl)
 F_reac = np.zeros([len(q),3])
 for j in range(len(q)):
-    F_reac[j,:] = -ep_in*q[j]*grad_phi[j,:]
+    F_reac[j,:] = -q[j]*grad_phi[j,:]
 F_reactotal = np.zeros([3])
 for j in range(len(q)):
     F_reactotal[:] = F_reactotal[:] + F_reac[j,:]
@@ -101,7 +101,7 @@ F_reactotal[:] = 4*np.pi*332.064*F_reactotal[:]
 # Dielectric boundary force calculation (DBF)
 
 grad_phi = solution_neumann.coefficients
-auxi = -ep_in*grad_phi*-ep_ex*4*np.pi*grad_phi
+auxi = -4*np.pi*grad_phi*4*np.pi*-grad_phi
 f_dbf = np.zeros([grid.number_of_elements,3])
 for j in range(grid.number_of_elements):
     f_dbf[j] = auxi[j]*grid.normals[j]
@@ -114,7 +114,7 @@ f_dbftotal[:] = -0.5*(ep_ex-ep_in)*f_dbftotal[:]
 f_dbftotal
 # Ionic boundary force calculation (IBF)
 phi = solution_dirichl.coefficients
-auxi = k*4*np.pi*phi**2
+auxi = k*4*np.pi*4*np.pi*phi**2
 f_ibf = np.zeros([grid.number_of_elements,3])
 for j in range(grid.number_of_elements):
     f_ibf[j] = auxi[j]*grid.normals[j]
