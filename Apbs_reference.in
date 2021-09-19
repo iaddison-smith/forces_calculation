@@ -1,5 +1,5 @@
 read
-mol pqr "1lyz_amber.pqr"
+mol pqr "pqr_files/1lyz/1lyz_amber.pqr"
 
 end
 
@@ -17,7 +17,7 @@ chgm spl2
 srfm spl2
 srad 1.4
 swin 0.3
-sdens 10.0
+sdens 20.0
 temp 298.15
 calcenergy total
 calcforce total
@@ -39,12 +39,13 @@ chgm spl2
 srfm spl2
 srad 1.4
 swin 0.3
-sdens 10.0
+sdens 20.0
 temp 298.15
 calcenergy total
 calcforce total
 end
 
 print elecEnergy solvated - reference end
+print elecForce solvated - reference end
 
 quit
