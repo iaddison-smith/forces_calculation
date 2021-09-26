@@ -8,7 +8,7 @@ from scipy.sparse.linalg import gmres
 
 # directory = '/home/ian/Desktop/Forces_bioelectrostatics' #Ubuntu
 directory = 'C:\\Users\\ian\Desktop\\forces_calculation' #Windows
-protein = '1lyz'
+protein = 'arg'
 forcefield = 'amber'
 #dir_prot = directory+'/pqr_files/'+protein #Ubuntu
 dir_prot = directory+'\\pqr_files\\'+protein #Windows
@@ -18,7 +18,7 @@ probe_radius = 1.4 #Probe radius in Angstrom
 
 #convert_pqr2xyzr('{}/{}.pqr'.format(dir_prot,pf),'{}/{}.xyzr'.format(dir_prot,pf)) #Nanoshaper required
 #generate_nanoshaper_mesh('{}/{}.xyzr'.format(dir_prot,pf), dir_prot,pf,density,probe_radius,False) #Nanoshaper required
-grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pf),'{}/{}.vert'.format(dir_prot,pf))
+grid = import_msms_mesh('{}/{}.face'.format(dir_prot,'arg_d04'),'{}/{}.vert'.format(dir_prot,'arg_d04'))
 #grid2 = bempp.api.import_grid('/home/ian/Desktop/Forces_bioelectrostatics/5pti_d1.msh')
 
 bempp.api.PLOT_BACKEND = "gmsh"
@@ -28,7 +28,7 @@ ep_ex = 80.
 k = 0.125
 
 # Read charges and coordinates from the .pqr file
-molecule_file = open('{}/{}.pqr'.format(dir_prot,pf), 'r').read().split('\n')
+molecule_file = open('{}/{}.pqr'.format(dir_prot,'arg'), 'r').read().split('\n')
 for line in molecule_file:
     line = line.split()
     if len(line)==0 or line[0]!='ATOM': continue
@@ -114,7 +114,7 @@ f_dbftotal[:] = -0.5*(ep_ex-ep_in)*f_dbftotal[:]
 f_dbftotal
 # Ionic boundary force calculation (IBF)
 phi = solution_dirichl.coefficients
-auxi = k*4*np.pi*4*np.pi*phi**2
+auxi = k*phi**2
 f_ibf = np.zeros([grid.number_of_elements,3])
 for j in range(grid.number_of_elements):
     f_ibf[j] = auxi[j]*grid.normals[j]
