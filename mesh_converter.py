@@ -49,7 +49,7 @@ def import_off_mesh(mesh_off_path):
     grid = bempp.api.import_grid(mesh_off_path)
     return grid
 
-def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name, density, probe_radius, save_mesh_build_files):
+def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, output_name, density, probe_radius, save_mesh_build_files):
     
     nanoshaper_dir = "/home/ian/Desktop/Forces_bioelectrostatics/nanoshaper/"
     nanoshaper_temp_dir = os.path.join(output_dir, "nano/")
@@ -63,7 +63,7 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name, density, p
     config_file = open(nanoshaper_temp_dir + 'surfaceConfiguration.prm', 'w')
     for line in config_template_file:
         if 'XYZR_FileName' in line:
-            path = os.path.join(mesh_dir, output_name+'.xyzr')
+            path = os.path.join(mesh_dir, output_name_temp +'.xyzr')
             line = 'XYZR_FileName = ' + path + ' \n'
         elif 'Grid_scale' in line:
             line = 'Grid_scale = {:04.1f} \n'.format(density)
