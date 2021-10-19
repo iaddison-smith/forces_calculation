@@ -51,15 +51,16 @@ def import_off_mesh(mesh_off_path):
 
 def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, output_name, density, probe_radius, save_mesh_build_files):
     
-    nanoshaper_dir = "/home/ian/Desktop/Forces_bioelectrostatics/nanoshaper/"
-    nanoshaper_temp_dir = os.path.join(output_dir, "nano/")
+    #nanoshaper_dir = "/home/ian/Desktop/Forces_bioelectrostatics/nanoshaper/"
+    nanoshaper_dir = "C:\\APBS-3.0.0\\bin"
+    nanoshaper_temp_dir = os.path.join(output_dir, "nano\\")
     mesh_dir = output_dir
 
     if not os.path.exists(nanoshaper_temp_dir):
         os.makedirs(nanoshaper_temp_dir)
 
     # Execute NanoShaper
-    config_template_file = open(nanoshaper_dir+'/config', 'r')
+    config_template_file = open(nanoshaper_dir+'\\config', 'r')
     config_file = open(nanoshaper_temp_dir + 'surfaceConfiguration.prm', 'w')
     for line in config_template_file:
         if 'XYZR_FileName' in line:
@@ -75,12 +76,13 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     config_file.close()
     config_template_file.close()
 
-    os.chdir(nanoshaper_temp_dir)
-    os.system(nanoshaper_dir+"/NanoShaper")
     
+    os.chdir(nanoshaper_temp_dir)
+    os.system(nanoshaper_dir+"\\Nanoshaper")
     os.chdir('..')
-    os.system('mv ' + nanoshaper_temp_dir + '*.vert ' + output_name + '.vert')
-    os.system('mv ' + nanoshaper_temp_dir + '*.face ' + output_name + '.face')
+    
+    os.system('move ' + nanoshaper_temp_dir + 'triangulatedSurf.vert  ' + output_name + '.vert')
+    os.system('move ' + nanoshaper_temp_dir + 'triangulatedSurf.face  ' + output_name + '.face')
     
     vert_file = open(output_name + '.vert', 'r')
     vert = vert_file.readlines()
@@ -99,6 +101,6 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     face_file.write(''.join(face[3:]))
     face_file.close()
     
-    os.system('rm -r ' + nanoshaper_temp_dir)
+    os.system('rmdir  ' + nanoshaper_temp_dir)
 
     os.chdir('..')

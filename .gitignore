@@ -9,3 +9,11 @@ apbs_calcref.in
 *.png
 Untitled.py
 io.mc
+pqr_files/arg/nano/exposed.xyz
+pqr_files/arg/nano/exposedIndices.txt
+pqr_files/arg/nano/stderror.txt
+pqr_files/arg/nano/surfaceConfiguration.prm
+pqr_files/5pti/nano/exposed.xyz
+pqr_files/5pti/nano/exposedIndices.txt
+pqr_files/5pti/nano/stderror.txt
+pqr_files/5pti/nano/surfaceConfiguration.prm
