@@ -51,7 +51,6 @@ def import_off_mesh(mesh_off_path):
 
 def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, output_name, density, probe_radius, save_mesh_build_files):
     
-    #nanoshaper_dir = "/home/ian/Desktop/Forces_bioelectrostatics/nanoshaper/"
     nanoshaper_dir = "C:\\APBS-3.0.0\\bin"
     nanoshaper_temp_dir = os.path.join(output_dir, "nano\\")
     mesh_dir = output_dir
@@ -100,7 +99,35 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     face_file = open(output_name + '.face', 'w')
     face_file.write(''.join(face[3:]))
     face_file.close()
-    
-    os.system('rmdir  ' + nanoshaper_temp_dir)
 
+    os.chdir(nanoshaper_temp_dir)
+    os.remove('exposed.xyz')
+    os.remove('exposedIndices.txt')
+    os.remove('stderror.txt')
+    os.remove('surfaceConfiguration.prm')
     os.chdir('..')
+    os.rmdir('nano')
+
+
+def pqrtomesh(directory,protein,forcefield,density,probe_radius):
+    dir_prot = directory + '\\pqr_files\\' + protein
+    pf = protein +'_' + forcefield
+    if density < 10.0:
+        pfd = protein +'_' + forcefield + '_' +'d'+str(density)[::2]
+    else:
+        pfd = protein +'_' + forcefield + '_' +'d'+str(density)[:2]+'0'
+
+    convert_pqr2xyzr('{}/{}.pqr'.format(dir_prot,pf),'{}/{}.xyzr'.format(dir_prot,pf))
+    generate_nanoshaper_mesh('{}/{}.xyzr'.format(dir_prot,pf),dir_prot,pf,pfd,density,probe_radius,False)
+    grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pfd),'{}/{}.vert'.format(dir_prot,pfd))
+    
+    # Read charges and coordinates from the .pqr file
+    q, x_q = np.array([]), np.empty((0,3))
+    molecule_file = open('{}/{}.pqr'.format(dir_prot,pf), 'r').read().split('\n')
+    for line in molecule_file:
+        line = line.split()
+        if len(line)==0 or line[0]!='ATOM': continue
+        q = np.append( q, float(line[8]))
+        x_q = np.vstack(( x_q, np.array(line[5:8]).astype(float) ))
+    
+    return grid, q, x_q

@@ -1,7 +1,7 @@
 __pycache__
 .ipynb_checkpoints
 .vscode
-nanoshaper
+nanoshaper/nanoshaper
 plots
 Molecule_Calculations.ipynb
 5pti_d1.msh
@@ -17,3 +17,14 @@ pqr_files/5pti/nano/exposed.xyz
 pqr_files/5pti/nano/exposedIndices.txt
 pqr_files/5pti/nano/stderror.txt
 pqr_files/5pti/nano/surfaceConfiguration.prm
+pqr_files/sphere/*.face
+pqr_files/sphere/*.vert
+pqr_files/1lyz/*.face
+pqr_files/1lyz/*.vert
+pqr_files/5pti/*.face
+pqr_files/5pti/*.vert
+pqr_files/arg/*.face
+pqr_files/arg/*.vert
+APBS/*.txt
+APBS/*.dx
+APBS/sphere_nosymmetric/*.txt
