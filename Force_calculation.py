@@ -72,14 +72,14 @@ def boundary_forces(solution_neumann,solution_dirichl,grid,k,ep_ex,ep_in):
     grad_phi = solution_neumann.coefficients[:]
     f_db = np.zeros([3])
     for j in range(grid.number_of_elements):
-        f_db += (grad_phi[j]**2)*grid.normals[j]*grid.volumes[j]
-    f_db = -4.184*0.5*332.064*(ep_ex-ep_in)*f_db
+        f_db += (ep_in/ep_ex)*(grad_phi[j]**2)*grid.normals[j]*grid.volumes[j]
+    f_db = -4.184*0.5*4*np.pi*332.064*(ep_ex-ep_in)*f_db
 
     #Ionic boundary force
     phi = solution_dirichl.coefficients[:]
     f_ib = np.zeros([3])
     for j in range(grid.number_of_elements):
-        f_ib += k*(phi[j]**2)*grid.normals[j]*grid.volumes[j]
-    f_ib = -4.184*0.5*332.064*(ep_ex)*f_ib
+        f_ib += (k**2)*(phi[j]**2)*grid.normals[j]*grid.volumes[j]
+    f_ib = -4.184*4*np.pi*0.5*332.064*(ep_ex)*f_ib
 
     return f_db,f_ib

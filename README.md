@@ -1,7 +1,7 @@
 ### Force calculation
 ==============================
  
-Electrostatic solvation Force calculation for use with bempp-cl library, for solving PB implicit solvent 
+Electrostatic solvation forces calculation for use with bempp-cl library, for solving PB implicit solvent 
 
 ## Installation:
 

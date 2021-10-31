@@ -19,12 +19,17 @@ pqr_files/5pti/nano/stderror.txt
 pqr_files/5pti/nano/surfaceConfiguration.prm
 pqr_files/sphere/*.face
 pqr_files/sphere/*.vert
+pqr_files/sphere/*.xyzr
 pqr_files/1lyz/*.face
 pqr_files/1lyz/*.vert
+pqr_files/1lyz/*.xyzr
 pqr_files/5pti/*.face
 pqr_files/5pti/*.vert
+pqr_files/5pti/*.xyzr
 pqr_files/arg/*.face
 pqr_files/arg/*.vert
+pqr_files/arg/*.xyzr
 APBS/*.txt
 APBS/*.dx
 APBS/sphere_nosymmetric/*.txt
+APBS/sphere_symmetric/*.txt

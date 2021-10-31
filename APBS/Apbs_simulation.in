@@ -1,12 +1,12 @@
 read
-mol pqr C:\Users\ian\Desktop\forces_calculation\pqr_files\sphere\sphere_symmetric.pqr 
+mol pqr C:\Users\ian\Desktop\forces_calculation\pqr_files\1lyz\1lyz_amber.pqr 
 
 end
 
 elec name reference
 mg-manual
 dime 350 350 350 
-glen 20 20 20 
+glen 70 70 70 
 lpbe
 pdie 4.0
 sdie 4.0
@@ -26,7 +26,7 @@ end
 elec name solvated
 mg-manual
 dime 350 350 350 
-glen 20 20 20 
+glen 70 70 70 
 lpbe
 pdie 4.0
 sdie 80.0
