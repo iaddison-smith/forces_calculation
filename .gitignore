@@ -31,5 +31,9 @@ pqr_files/arg/*.vert
 pqr_files/arg/*.xyzr
 APBS/*.txt
 APBS/*.dx
-APBS/sphere_nosymmetric/*.txt
-APBS/sphere_symmetric/*.txt
+APBS/sphere_nosymmetric/*
+APBS/sphere_symmetric/*
+APBS/1lyz/*
+APBS/arg/*
+APBS/Apbs_simulation.in
+mdanalysis/*

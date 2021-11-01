@@ -1,12 +1,12 @@
 read
-mol pqr C:\Users\ian\Desktop\forces_calculation\pqr_files\1lyz\1lyz_amber.pqr 
+mol pqr C:\Users\ian\Desktop\forces_calculation\pqr_files\sphere\sphere_nosymmetric.pqr 
 
 end
 
 elec name reference
 mg-manual
-dime 350 350 350 
-glen 70 70 70 
+dime 300 300 300 
+glen 20 20 20 
 lpbe
 pdie 4.0
 sdie 4.0
@@ -20,13 +20,13 @@ swin 0.3
 sdens 20.0
 temp 298.15
 calcenergy total
-write pot dx potential_reference
+write pot dx pot_ref_sphere_nosymmetric_300_20_mol 
 end
 
 elec name solvated
 mg-manual
-dime 350 350 350 
-glen 70 70 70 
+dime 300 300 300 
+glen 20 20 20 
 lpbe
 pdie 4.0
 sdie 80.0
@@ -42,7 +42,7 @@ swin 0.3
 sdens 20.0
 temp 298.15
 calcenergy total
-write pot dx potential_solvated
+write pot dx pot_sol_sphere_nosymmetric_300_20_mol 
 end
 
 print elecEnergy solvated - reference end

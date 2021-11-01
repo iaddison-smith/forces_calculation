@@ -109,18 +109,19 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     os.rmdir('nano')
 
 
-def pqrtomesh(directory,protein,forcefield,density,probe_radius):
+def pqrtomesh(directory,protein,forcefield,density,probe_radius,build_mesh='yes'):
     dir_prot = directory + '\\pqr_files\\' + protein
     pf = protein +'_' + forcefield
     if density < 10.0:
         pfd = protein +'_' + forcefield + '_' +'d'+str(density)[::2]
     else:
         pfd = protein +'_' + forcefield + '_' +'d'+str(density)[:2]+'0'
-
-    convert_pqr2xyzr('{}/{}.pqr'.format(dir_prot,pf),'{}/{}.xyzr'.format(dir_prot,pf))
-    generate_nanoshaper_mesh('{}/{}.xyzr'.format(dir_prot,pf),dir_prot,pf,pfd,density,probe_radius,False)
-    grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pfd),'{}/{}.vert'.format(dir_prot,pfd))
-    
+    if build_mesh=='yes':
+        convert_pqr2xyzr('{}/{}.pqr'.format(dir_prot,pf),'{}/{}.xyzr'.format(dir_prot,pf))
+        generate_nanoshaper_mesh('{}/{}.xyzr'.format(dir_prot,pf),dir_prot,pf,pfd,density,probe_radius,False)
+        grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pfd),'{}/{}.vert'.format(dir_prot,pfd))
+    else:
+        grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pfd),'{}/{}.vert'.format(dir_prot,pfd))
     # Read charges and coordinates from the .pqr file
     q, x_q = np.array([]), np.empty((0,3))
     molecule_file = open('{}/{}.pqr'.format(dir_prot,pf), 'r').read().split('\n')
