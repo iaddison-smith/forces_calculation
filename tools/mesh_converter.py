@@ -75,7 +75,6 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     config_file.close()
     config_template_file.close()
 
-    
     os.chdir(nanoshaper_temp_dir)
     os.system(nanoshaper_dir+"\\Nanoshaper")
     os.chdir('..')
@@ -110,6 +109,7 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
 
 
 def pqrtomesh(directory,protein,forcefield,density,probe_radius,build_mesh='yes'):
+
     dir_prot = directory + '\\pqr_files\\' + protein
     pf = protein +'_' + forcefield
     if density < 10.0:
@@ -123,7 +123,6 @@ def pqrtomesh(directory,protein,forcefield,density,probe_radius,build_mesh='yes'
     else:
         grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pfd),'{}/{}.vert'.format(dir_prot,pfd))
         
-    # Read charges and coordinates from the .pqr file
     q, x_q = np.array([]), np.empty((0,3))
     molecule_file = open('{}/{}.pqr'.format(dir_prot,pf), 'r').read().split('\n')
     for line in molecule_file:

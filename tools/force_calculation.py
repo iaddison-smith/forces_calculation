@@ -53,33 +53,41 @@ def solvent_potential_first_derivate(xq, h, neumann_space, dirichl_space, soluti
 
     return dpdr
  
-def fixedcharge_forces(x_q,q,h,neumann_space,dirichl_space,solution_neumann,solution_dirichl):
+def fixed_charge_forces(solution_neumann,solution_dirichl,neumann_space,dirichl_space,x_q,q,h=0.001):
     
-    grad_phi = solvent_potential_first_derivate(x_q, h, neumann_space, dirichl_space, solution_neumann, solution_dirichl)
-    F_reac = np.zeros([len(q),3])
-    for j in range(len(q)):
-        F_reac[j,:] = -q[j]*grad_phi[j,:]
-    F_reactotal = np.zeros([3])
-    for j in range(len(q)):
-        F_reactotal[:] = F_reactotal[:] + F_reac[j,:]
-    F_reactotal[:] = 4.184*4*np.pi*332.064*F_reactotal[:]
-    F_reac[:] = 4.184*4*np.pi*332.064*F_reac[:]
-    return F_reactotal, F_reac
+    convert_to_kcalmolA = 4 * np.pi * 332.0636817823836 #1e-3*Na*1e10*(qe**2/(ep_vacc*4*numpy.pi*cal2J))
+    kcal_to_kJ = 4.184
 
-def boundary_forces(solution_neumann,solution_dirichl,grid,k,ep_ex,ep_in):
+    #fixed_charge_forces calculations
+    grad_phi = solvent_potential_first_derivate(x_q, h, neumann_space, dirichl_space, solution_neumann, solution_dirichl)
+    f_reac = np.zeros([len(q),3])
+    for j in range(len(q)):
+        f_reac[j,:] = -q[j]*grad_phi[j,:]
+    f_reactotal = np.zeros([3])
+    for j in range(len(q)):
+        f_reactotal[:] = f_reactotal[:] + f_reac[j,:]
+    f_reactotal[:] = kcal_to_kJ * convert_to_kcalmolA * f_reactotal[:]
+    f_reac[:] = kcal_to_kJ * convert_to_kcalmolA * f_reac[:]
+
+    return f_reactotal, f_reac
+
+def boundary_forces(solution_neumann,solution_dirichl,grid,k=0.125,ep_ex=80,ep_in=4):
+
+    convert_to_kcalmolA = 4 * np.pi * 332.0636817823836 #1e-3*Na*1e10*(qe**2/(ep_vacc*4*numpy.pi*cal2J))
+    kcal_to_kJ = 4.184
 
     #Dielectric boundary force
     grad_phi = solution_neumann.coefficients[:]
     f_db = np.zeros([3])
     for j in range(grid.number_of_elements):
         f_db += (ep_in/ep_ex)*(grad_phi[j]**2)*grid.normals[j]*grid.volumes[j]
-    f_db = -4.184*0.5*4*np.pi*332.064*(ep_ex-ep_in)*f_db
+    f_db = - kcal_to_kJ * 0.5 * convert_to_kcalmolA * (ep_ex-ep_in) *f_db
 
     #Ionic boundary force
     phi = solution_dirichl.coefficients[:]
     f_ib = np.zeros([3])
     for j in range(grid.number_of_elements):
         f_ib += (k**2)*(phi[j]**2)*grid.normals[j]*grid.volumes[j]
-    f_ib = -4.184*4*np.pi*0.5*332.064*(ep_ex)*f_ib
+    f_ib = - kcal_to_kJ * 0.5 * convert_to_kcalmolA * (ep_ex)*f_ib
 
     return f_db,f_ib

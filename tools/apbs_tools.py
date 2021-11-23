@@ -33,10 +33,10 @@ def apbs_simulation(protein,pqr_path,apbs_dir,dime_len,grid_len,mol_surface,calc
     return None
 
 def fixedchargeforces_mol(q,x_q,phi,T=298.15):
-    N = phi.edges[1].shape
-    N = N[0]
-    F_qf = np.zeros([3])
 
+    N = phi.edges[1].shape[0]
+    f_qf = np.zeros([3])
+    R_idealgas = 8.314e-3 #kJ/molK Ideal gas constant (kB * Na)
     for charge in range(len(q)):
         for i in range(N):
             if phi.edges[1][i] > x_q[charge][0]:
@@ -51,13 +51,17 @@ def fixedchargeforces_mol(q,x_q,phi,T=298.15):
                 z_i = k-1
                 break
         
+        #phi in dimensionless unit (kBT/Ec)
         # x derivate
-        F_qf[0] = F_qf[0] +(8.314E-3)*(298.15)*q[charge]*(phi.grid[x_i+1][y_i][z_i]-phi.grid[x_i-1][y_i][z_i])/(2*(phi.edges[1][x_i]-phi.edges[1][x_i-1]))
+        dphidx = (phi.grid[x_i+1][y_i][z_i] -phi.grid[x_i-1][y_i][z_i]) / (2 * (phi.edges[1][x_i]-phi.edges[1][x_i-1]))
+        f_qf[0] = f_qf[0] + R_idealgas * T * q[charge] * dphidx
 
         # y derivate
-        F_qf[1] = F_qf[1] +(8.314E-3)*(298.15)*q[charge]*(phi.grid[x_i][y_i+1][z_i]-phi.grid[x_i][y_i-1][z_i])/(2*(phi.edges[1][y_i]-phi.edges[1][y_i-1]))
+        dphidy = (phi.grid[x_i][y_i+1][z_i]-phi.grid[x_i][y_i-1][z_i]) / (2 * (phi.edges[1][y_i]-phi.edges[1][y_i-1]) )
+        f_qf[1] = f_qf[1] + R_idealgas * T * q[charge] * dphidy
         
         # z derivate
-        F_qf[2] = F_qf[2] +(8.314E-3)*(298.15)*q[charge]*(phi.grid[x_i][y_i][z_i+1]-phi.grid[x_i][y_i][z_i-1])/(2*(phi.edges[1][z_i]-phi.edges[1][z_i-1]))
+        dphidz = (phi.grid[x_i][y_i][z_i+1]-phi.grid[x_i][y_i][z_i-1]) / (2 * (phi.edges[1][z_i]-phi.edges[1][z_i-1]) )
+        f_qf[2] = f_qf[2] + R_idealgas * T * q[charge] * dphidz
 
-    return F_qf
+    return f_qf
