@@ -56,7 +56,7 @@ class Molecule:
         op_discrete = blocked.strong_form()
 
         #Resolucion del sistema de ecuaciones con GMRES
-        x, info = gmres(op_discrete, rhs, tol=1e-3, maxiter=1000, restart = 2000)
+        x, info = gmres(op_discrete, rhs, tol=1e-8, maxiter=10000, restart = 20000)
 
         #Guardar potencial electrico y su derivada normal
         self.phi = bempp.api.GridFunction(dirichl_space, coefficients=x[:dirichl_space.global_dof_count])
@@ -177,7 +177,7 @@ class Two_proteins:
         op_discrete = blocked.strong_form()
 
         #Resolucion del sistema de ecuaciones con GMRES
-        x, info = gmres(op_discrete, rhs, tol=1e-3, maxiter=1000, restart = 2000)
+        x, info = gmres(op_discrete, rhs, tol=1e-8, maxiter=10000, restart = 20000)
 
         #Guardar potencial electrico y su derivada para cada una de las proteinas
         a = dirichl_space1.global_dof_count
