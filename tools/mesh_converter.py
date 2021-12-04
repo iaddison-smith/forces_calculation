@@ -132,3 +132,24 @@ def pqrtomesh(directory,protein,forcefield,density,probe_radius,build_mesh='yes'
         x_q = np.vstack(( x_q, np.array(line[5:8]).astype(float) ))
     
     return grid, q, x_q
+
+def mesh_translate(mesh_face_path, mesh_vert_path, mesh_face_path_out, mesh_vert_path_out, distance):
+
+    face_file = open(mesh_face_path, 'r')
+    face_data = face_file.read().split('\n')
+    face_t_file = open(mesh_face_path_out, 'w')
+    for line in face_data:
+        face_t_file.write(line + ' \n')
+
+    vert_file = open(mesh_vert_path, 'r')
+    vert_data = vert_file.read().split('\n')
+    vert_t_file = open(mesh_vert_path_out, 'w')
+
+    #To Do
+
+    face_file.close() 
+    vert_file.close()
+    face_t_file.close()
+    vert_t_file.close()
+
+    return None

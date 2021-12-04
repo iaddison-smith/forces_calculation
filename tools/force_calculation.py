@@ -68,10 +68,11 @@ def fixed_charge_forces(solution_neumann,solution_dirichl,neumann_space,dirichl_
         f_reactotal[:] = f_reactotal[:] + f_reac[j,:]
     f_reactotal[:] = kcal_to_kJ * convert_to_kcalmolA * f_reactotal[:]
     f_reac[:] = kcal_to_kJ * convert_to_kcalmolA * f_reac[:]
+    Efield = -convert_to_kcalmolA*kcal_to_kJ*grad_phi
 
-    return f_reactotal, f_reac
+    return f_reactotal, f_reac, Efield
 
-def boundary_forces(solution_neumann,solution_dirichl,grid,k=0.125,ep_ex=80,ep_in=4):
+def boundary_forces(solution_neumann,solution_dirichl,grid,k,ep_ex,ep_in):
 
     convert_to_kcalmolA = 4 * np.pi * 332.0636817823836 #1e-3*Na*1e10*(qe**2/(ep_vacc*4*numpy.pi*cal2J))
     kcal_to_kJ = 4.184
