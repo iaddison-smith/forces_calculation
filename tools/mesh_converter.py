@@ -139,13 +139,23 @@ def mesh_translate(mesh_face_path, mesh_vert_path, mesh_face_path_out, mesh_vert
     face_data = face_file.read().split('\n')
     face_t_file = open(mesh_face_path_out, 'w')
     for line in face_data:
+        if len(line) == 0:
+            continue
         face_t_file.write(line + ' \n')
 
     vert_file = open(mesh_vert_path, 'r')
     vert_data = vert_file.read().split('\n')
     vert_t_file = open(mesh_vert_path_out, 'w')
-
-    #To Do
+    for line in vert_data:
+        line = line.split()
+        if len(line) == 0:
+            continue
+        tx,ty,tz = distance
+        x_new = float(line[0])+ float(tx)
+        y_new = float(line[1])+ float(ty)
+        z_new = float(line[2])+ float(tz)
+        text_template = '    {: 1.3f}    {: 1.3f}    {: 1.3f}    {: 1.3f}    {: 1.3f}    {: 1.3f}       {}       {}  {} \n'
+        vert_t_file.write(text_template.format(x_new,y_new,z_new,float(line[3]),float(line[4]),float(line[5]),line[6],line[7],line[8]))
 
     face_file.close() 
     vert_file.close()
