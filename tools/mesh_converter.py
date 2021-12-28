@@ -133,7 +133,21 @@ def pqrtomesh(directory,protein,forcefield,density,probe_radius,build_mesh='yes'
     
     return grid, q, x_q
 
-def mesh_translate(mesh_face_path, mesh_vert_path, mesh_face_path_out, mesh_vert_path_out, distance):
+def mesh_translate(directory, protein, ff_ref, gs, distance):
+
+    ff = ff_ref+'_t'+str(distance[0])
+    if gs < 10.0:
+        gs_str = 'd'+str(gs)[::2]
+    else:
+        gs_str = 'd'+str(gs)[:2]+'0'
+    file_ref = protein+'_'+ff_ref+'_'+gs_str
+    file = protein + '_' + ff + '_' + gs_str
+
+    dir_prot = directory + '\\pqr_files\\' + protein
+    mesh_face_path = '{}\\{}.face'.format(dir_prot,file_ref)
+    mesh_face_path_out = '{}\\{}.face'.format(dir_prot,file)
+    mesh_vert_path = '{}\\{}.vert'.format(dir_prot,file_ref)
+    mesh_vert_path_out = '{}\\{}.vert'.format(dir_prot,file)
 
     face_file = open(mesh_face_path, 'r')
     face_data = face_file.read().split('\n')
@@ -161,5 +175,33 @@ def mesh_translate(mesh_face_path, mesh_vert_path, mesh_face_path_out, mesh_vert
     vert_file.close()
     face_t_file.close()
     vert_t_file.close()
+
+    return None
+
+def pqr_translate(directory, protein, ff_ref, distance):
+
+    ff = ff_ref+'_t'+str(distance[0])
+    file_ref_pqr = protein + '_' + ff_ref
+    file_pqr = protein + '_' + ff
+    dir_prot = directory + '\\pqr_files\\' + protein
+    mesh_pqr_path = '{}\\{}.pqr'.format(dir_prot,file_ref_pqr)
+    mesh_pqr_path_out = '{}\\{}.pqr'.format(dir_prot,file_pqr)
+
+    pqr_file = open(mesh_pqr_path, 'r')
+    pqr_data = pqr_file.read().split('\n')
+    pqr_t_file = open(mesh_pqr_path_out, 'w')
+    for line in pqr_data:
+        line = line.split()
+        if len(line) == 0 or line[0] != 'ATOM':
+            continue
+        tx,ty,tz = distance
+        x_new = float(line[5])+ float(tx)
+        y_new = float(line[6])+ float(ty)
+        z_new = float(line[7])+ float(tz)
+        text_template = '{} {}  {}   {} {}        {: 1.3f}  {: 1.3f}  {: 1.3f}  {}  {} \n'
+        pqr_t_file.write(text_template.format(line[0],line[1],line[2],line[3],line[4],x_new,y_new,z_new,line[8],line[9]))
+
+    pqr_file.close() 
+    pqr_t_file.close()
 
     return None

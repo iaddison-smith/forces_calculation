@@ -32,6 +32,9 @@ class Molecule:
         self.ep_in = ep_in
         self.ep_ex = ep_ex
         self.kappa = kappa
+        self.x_q = x_q
+        self.q = q
+
         dirichl_space = bempp.api.function_space(self.grid, "DP", 0)
         neumann_space = bempp.api.function_space(self.grid, "DP", 0)
         @bempp.api.real_callable
@@ -91,15 +94,17 @@ class Molecule:
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Solvation energy for complex (kJ/mol): '+ str(self.solv_energy)+ '\n')
-        results_file.write('Total solvation forces for complex (kJ/molA): ' + str(self.f_solv)+ '\n')
-        results_file.write('Total fixed charge forces for complex (kJ/molA): ' + str(self.f_qf)+ '\n')
-        results_file.write('Total dielectric boundary force for complex (kJ/molA): ' + str(self.f_db)+ '\n')
-        results_file.write('Total ionic boundary force for complex (kJ/molA): ' + str(self.f_ib)+ '\n')
+        results_file.write('Total solvation forces for complex (kJ/molA): {} {} {}'.format(self.f_solv[0],self.f_solv[1],self.f_solv[2])+ '\n')
+        results_file.write('Total fixed charge forces for complex (kJ/molA): {} {} {}'.format(self.f_qf[0],self.f_qf[1],self.f_qf[2])+ '\n')
+        results_file.write('Total dielectric boundary force for complex (kJ/molA): {} {} {}'.format(self.f_db[0],self.f_db[1],self.f_db[2])+ '\n')
+        results_file.write('Total ionic boundary force for complex (kJ/molA): {} {} {}'.format(self.f_ib[0],self.f_ib[1],self.f_ib[2])+ '\n')
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Electric field (kJ/moleA) in solute charge points \n')
-        results_file.write(str(self.Efield))
-
+        results_file.write('x_q, q, E \n')
+        for j in range(len(self.Efield)):
+            results_file.write('{} {} {}  {}  {: 5.3e} {: 5.3e} {: 5.3e} \n'.format(self.x_q[j,0],self.x_q[j,1],self.x_q[j,2],self.q[j],self.Efield[j][0],self.Efield[j][1],self.Efield[j][2]))
+        results_file.write('\n')
         results_file.close()
 
         return None
@@ -116,15 +121,19 @@ class Two_proteins:
         
     """
 
-    def __init__(self, dir_name, pname1, ffname1, gs1, pname2, ffname2, gs2, external_grid = 'n', ep_in=4, ep_ex=80, kappa=0.125):
+    def __init__(self, dir_name, pname1, ffname1, gs1, pname2, ffname2, gs2, distance, external_grid = 'n', ep_in=4, ep_ex=80, kappa=0.125):
         
-        #Crear malla de la proteina
+
         if external_grid == 'n':
-            self.grid1, q1, x_q1 = pqrtomesh(directory=dir_name, protein=pname1, forcefield=ffname1, density=gs1, probe_radius=1.4)
-            self.grid2, q2, x_q2 = pqrtomesh(directory=dir_name, protein=pname2, forcefield=ffname2, density=gs2, probe_radius=1.4)
+            mesh_translate(dir_name, pname2, ffname2, gs2, distance)
+            pqr_translate(dir_name, pname2, ffname2, distance)
+            self.grid1, q1, x_q1 = pqrtomesh(directory=dir_name, protein=pname1, forcefield=ffname1, density=gs1, probe_radius=1.4, build_mesh='n')
+            ff = ffname2+'_t'+str(distance[0])
+            self.grid2, q2, x_q2 = pqrtomesh(directory=dir_name, protein=pname2, forcefield=ff, density=gs2, probe_radius=1.4,build_mesh='n')
         else:
             self.grid1, q1, x_q1 = pqrtomesh(directory=dir_name, protein=pname1, forcefield=ffname1, density=gs1, probe_radius=1.4, build_mesh='n')
-            self.grid2, q2, x_q2 = pqrtomesh(directory=dir_name, protein=pname2, forcefield=ffname2, density=gs2, probe_radius=1.4, build_mesh='n')
+            ff = ffname2+'_t'+str(distance[0])
+            self.grid2, q2, x_q2 = pqrtomesh(directory=dir_name, protein=pname2, forcefield=ff, density=gs2, probe_radius=1.4, build_mesh='n')
         
         #Crear espacio de funciones y lado derecho del sistema de ecuaciones
         dirichl_space1 = bempp.api.function_space(self.grid1, "DP", 0)
@@ -135,7 +144,11 @@ class Two_proteins:
         self.ep_in = ep_in
         self.ep_ex = ep_ex
         self.kappa = kappa
-        
+        self.q1 = q1
+        self.x_q1 = x_q1
+        self.q2 = q2
+        self.x_q2 = x_q2
+
         @bempp.api.real_callable
         def charges_fun(x, n, domain_index, result):
             suma = 0
@@ -231,10 +244,12 @@ class Two_proteins:
 
     def save_info(self, dir, pname1, fname1, gs1, pname2, fname2, gs2, dist):
 
-        results_file = open(dir + '\\results\\results_' + pname1 +fname1+'gs'+ str(gs1)+'_' +'to'+'_'+pname2+fname2+'gs'+str(gs2)+'_'+str(dist)+'.txt', 'w')
+        results_file = open(dir + '\\results\\results_' + pname1 +fname1+'gs'+ str(gs1)+'_' +'to'+'_'+pname2+fname2+'gs'+str(gs2)+'_'+'dist'+str(dist)+'.txt', 'w')
 
         results_file.write('Results for ' +pname1+'_'+fname1 + ' to ' + pname2+ '_'+ fname2 + '\n')
-        results_file.write('Distance between molecules: '+ str(dist)+ ' A \n')
+        results_file.write('Distance between molecules (x-axis): '+ str(dist[0])+ ' A \n')
+        results_file.write('Distance between molecules (y-axis): '+ str(dist[1])+ ' A \n')
+        results_file.write('Distance between molecules (z-axis): '+ str(dist[2])+ ' A \n')
         results_file.write('Solute dielectric : ' + str(self.ep_in)+ '\n')
         results_file.write('Solvent dielectric: ' + str(self.ep_ex)+ '\n')
         results_file.write('Debye length inverse: ' + str(self.kappa) + '\n')
@@ -251,25 +266,30 @@ class Two_proteins:
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Solvation energy for molecule 1 (kJ/mol): '+ str(self.solv_energy1)+ '\n')
-        results_file.write('Total solvation forces for molecule 1 (kJ/molA): ' + str(self.f_solv1)+ '\n')
-        results_file.write('Total fixed charge forces for molecule 1 (kJ/molA): ' + str(self.f_qf1)+ '\n')
-        results_file.write('Total dielectric boundary force for molecule 1 (kJ/molA): ' + str(self.f_db1)+ '\n')
-        results_file.write('Total ionic boundary force for molecule 1 (kJ/molA): ' + str(self.f_ib1)+ '\n')
+        results_file.write('Total solvation forces for molecule 1 (kJ/molA): {} {} {}'.format(self.f_solv1[0],self.f_solv1[1],self.f_solv1[2]) +  '\n')
+        results_file.write('Total fixed charge forces for molecule 1 (kJ/molA): {} {} {}'.format(self.f_qf1[0],self.f_qf1[1],self.f_qf1[2]) + '\n')
+        results_file.write('Total dielectric boundary force for molecule 1 (kJ/molA): {} {} {}'.format(self.f_db1[0],self.f_db1[1],self.f_db1[2]) + '\n')
+        results_file.write('Total ionic boundary force for molecule 1 (kJ/molA): {} {} {}'.format(self.f_ib1[0],self.f_ib1[1],self.f_ib1[2]) + '\n')
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Solvation energy for molecule 2 (kJ/mol): '+ str(self.solv_energy2)+ '\n')
-        results_file.write('Total solvation forces for molecule 2 (kJ/molA): ' + str(self.f_solv2)+ '\n')
-        results_file.write('Total fixed charge forces for molecule 2 (kJ/molA): ' + str(self.f_qf2)+ '\n')
-        results_file.write('Total dielectric boundary force for molecule 2 (kJ/molA): ' + str(self.f_db2)+ '\n')
-        results_file.write('Total ionic boundary force for molecule 2 (kJ/molA): ' + str(self.f_ib2)+ '\n')
+        results_file.write('Total solvation forces for molecule 2 (kJ/molA): {} {} {}'.format(self.f_solv2[0],self.f_solv2[1],self.f_solv2[2]) +  '\n')
+        results_file.write('Total fixed charge forces for molecule 2 (kJ/molA): {} {} {}'.format(self.f_qf2[0],self.f_qf2[1],self.f_qf2[2]) + '\n')
+        results_file.write('Total dielectric boundary force for molecule 2 (kJ/molA): {} {} {}'.format(self.f_db2[0],self.f_db2[1],self.f_db2[2]) + '\n')
+        results_file.write('Total ionic boundary force for molecule 2 (kJ/molA): {} {} {}'.format(self.f_ib2[0],self.f_ib2[1],self.f_ib2[2]) + '\n')
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Electric field in solute charge points for molecule 1 (kJ/molAe) \n')
-        results_file.write(str(self.Efield1))
+        results_file.write('x_q, q, E \n')
+        for j in range(len(self.Efield1)):
+            results_file.write('{} {} {}  {}  {: 5.3e} {: 5.3e} {: 5.3e} \n'.format(self.x_q1[j,0],self.x_q1[j,1],self.x_q1[j,2],self.q1[j],self.Efield1[j][0],self.Efield1[j][1],self.Efield1[j][2]))
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Electric field in solute charge points for molecule 2 (kJ/molAe) \n')
-        results_file.write(str(self.Efield2))
+        results_file.write('x_q, q, E \n')
+        for j in range(len(self.Efield2)):
+            results_file.write('{} {} {}  {}  {: 5.3e} {: 5.3e} {: 5.3e} \n'.format(self.x_q2[j,0],self.x_q2[j,1],self.x_q2[j,2],self.q2[j],self.Efield2[j][0],self.Efield2[j][1],self.Efield2[j][2]))
+        results_file.write('\n')
 
         results_file.close()
 
