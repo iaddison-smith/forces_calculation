@@ -14,9 +14,9 @@ class Molecule:
     Simulacion PBE linealizadas con calculo de fuerzas incluidos
         directory_name = directorio donde se guarda el repositorio
         protein_name = proteina a simular (Ejemplo: arg)
-        forcefield_name = campo de fuerzas para la generacion del .pqr
+        forcefield_name = campo de fuerzas usado en la generacion del .pqr (Ejemplo arg_amber.pqr)
         density_grid = Grid scale en el caso de ocupar nanoshaper
-        external_grid = ocupar malla ya generada en vez de Nanoshaper
+        external_grid = Obviar la generacion de malla en caso de que ya se tenga disponible
         
     """
 
@@ -53,7 +53,7 @@ class Molecule:
         slp_out  = modified_helmholtz.single_layer(neumann_space, dirichl_space, dirichl_space, kappa)
         dlp_out  = modified_helmholtz.double_layer(dirichl_space, dirichl_space, dirichl_space, kappa)
 
-        # Matrix Assembly
+        #Crear matriz del sistema lineal
         blocked = bempp.api.BlockedOperator(2, 2)
         blocked[0, 0] = 0.5*identity + dlp_in
         blocked[0, 1] = -slp_in
@@ -73,6 +73,7 @@ class Molecule:
         dlp_q = bempp.api.operators.potential.laplace.double_layer(dirichl_space, x_q.transpose())
         phi_q = slp_q*self.dphidn - dlp_q*self.phi
         self.f_solv = np.zeros([3])
+
         #Calcular las fuerzas de solvatacion para la moleculas
         convert_to_kcalmolA = 4 * np.pi * 332.0636817823836 #1e-3*Na*1e10*(qe**2/(ep_vacc*4*numpy.pi*cal2J))
         kcal_to_kJ = 4.184
@@ -84,13 +85,13 @@ class Molecule:
     def save_info(self, dir, pname, fname, gs):
 
         results_file = open(dir + '\\results\\results_' + pname + '_' + fname + '_' + str(gs) +'.txt', 'w')
-
         results_file.write('Results for ' +pname+'_'+fname +'\n')
         results_file.write('Solute dielectric : ' + str(self.ep_in)+ '\n')
         results_file.write('Solvent dielectric: ' + str(self.ep_ex)+ '\n')
         results_file.write('Grid scale: '+ str(gs) + '\n')
         results_file.write('Number of elements: '+str(self.grid.number_of_elements) + '\n')
         results_file.write('Total surface area (A^2): '+str(np.sum(self.grid.volumes)) + '\n')
+        results_file.write('Grid per surface (el/A^2): ' + str(self.grid.number_of_elements/(np.sum(self.grid.volumes))) + '\n')
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Solvation energy for complex (kJ/mol): '+ str(self.solv_energy)+ '\n')
@@ -169,13 +170,13 @@ class Two_proteins:
         rhs = np.concatenate([charged_grid_fun1.coefficients, np.zeros(neumann_space1.global_dof_count),  
                       np.zeros(neumann_space2.global_dof_count),charged_grid_fun2.coefficients])
 
-        #Poisson equation operators
+        #Operadores de Laplace para ecuaciones de Poisson para los solutos
         identity1 = sparse.identity(dirichl_space1, dirichl_space1, dirichl_space1)
         slp_in11   = laplace.single_layer(neumann_space1, dirichl_space1, dirichl_space1)
         dlp_in11   = laplace.double_layer(dirichl_space1, dirichl_space1, dirichl_space1)
         slp_in22   = laplace.single_layer(neumann_space2, dirichl_space2, dirichl_space2)
         dlp_in22   = laplace.double_layer(dirichl_space2, dirichl_space2, dirichl_space2)
-        #Poisson-Boltzmann equations operators
+        #Operadores de Yukawa para ecuacion de Poisson-Boltzmann para el solvente
         identity2 = sparse.identity(dirichl_space2, dirichl_space2, dirichl_space2)
         slp_out11  = modified_helmholtz.single_layer(neumann_space1, dirichl_space1, dirichl_space1, kappa)
         slp_out12  = modified_helmholtz.single_layer(neumann_space1, dirichl_space2, dirichl_space2, kappa)
@@ -186,7 +187,7 @@ class Two_proteins:
         dlp_out21  = modified_helmholtz.double_layer(dirichl_space2, dirichl_space1, dirichl_space1, kappa)
         dlp_out22  = modified_helmholtz.double_layer(dirichl_space2, dirichl_space2, dirichl_space2, kappa)
 
-        # Matrix Assembly
+        #Creacion de Matriz del sistema lineal
         blocked = bempp.api.BlockedOperator(4, 4)
         blocked[0, 0] = 0.5*identity1 + dlp_in11
         blocked[0, 1] = -slp_in11
@@ -245,7 +246,6 @@ class Two_proteins:
     def save_info(self, dir, pname1, fname1, gs1, pname2, fname2, gs2, dist):
 
         results_file = open(dir + '\\results\\results_' + pname1 +fname1+'gs'+ str(gs1)+'_' +'to'+'_'+pname2+fname2+'gs'+str(gs2)+'_'+'dist'+str(dist)+'.txt', 'w')
-
         results_file.write('Results for ' +pname1+'_'+fname1 + ' to ' + pname2+ '_'+ fname2 + '\n')
         results_file.write('Distance between molecules (x-axis): '+ str(dist[0])+ ' A \n')
         results_file.write('Distance between molecules (y-axis): '+ str(dist[1])+ ' A \n')
@@ -258,11 +258,13 @@ class Two_proteins:
         results_file.write('Grid scale molecule 1: '+ str(gs1) + '\n')
         results_file.write('Number of elements 1: '+str(self.grid1.number_of_elements) + '\n')
         results_file.write('Total surface area 1 (A^2): '+str(np.sum(self.grid1.volumes)) + '\n')
+        results_file.write('Grid per surface (el/A^2): ' + str(self.grid1.number_of_elements/(np.sum(self.grid1.volumes))) + '\n')
         results_file.write('\n')
         results_file.write('Molecule 2: '+pname2+'_'+fname2 + '\n')
         results_file.write('Grid scale molecule 2: '+ str(gs2) + '\n')
         results_file.write('Number of elements 2: '+str(self.grid2.number_of_elements) + '\n')
         results_file.write('Total surface area 2 (A^2): '+str(np.sum(self.grid2.volumes)) + '\n')
+        results_file.write('Grid per surface (el/A^2): ' + str(self.grid2.number_of_elements/(np.sum(self.grid2.volumes))) + '\n')
         results_file.write('\n')
         results_file.write('\n')
         results_file.write('Solvation energy for molecule 1 (kJ/mol): '+ str(self.solv_energy1)+ '\n')
@@ -290,7 +292,6 @@ class Two_proteins:
         for j in range(len(self.Efield2)):
             results_file.write('{} {} {}  {}  {: 5.3e} {: 5.3e} {: 5.3e} \n'.format(self.x_q2[j,0],self.x_q2[j,1],self.x_q2[j,2],self.q2[j],self.Efield2[j][0],self.Efield2[j][1],self.Efield2[j][2]))
         results_file.write('\n')
-
         results_file.close()
 
         return None

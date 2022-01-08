@@ -1,9 +1,11 @@
-
 import numpy as np
 import os
 import bempp.api
 
+
 def solvent_potential_first_derivate(xq, h, neumann_space, dirichl_space, solution_neumann, solution_dirichl):
+    
+    #Function from https://github.com/bem4solvation/Multipoles_calculations_python
     """
     Compute the first derivate of potential due to solvent
     in the position of the points

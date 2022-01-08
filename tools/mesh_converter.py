@@ -3,6 +3,7 @@ import os
 import bempp.api
 
 def convert_pqr2xyzr(mesh_pqr_path, mesh_xyzr_path):
+
     pqr_file = open(mesh_pqr_path, 'r')
     pqr_data = pqr_file.read().split('\n')
     xyzr_file = open(mesh_xyzr_path, 'w')
@@ -13,13 +14,11 @@ def convert_pqr2xyzr(mesh_pqr_path, mesh_xyzr_path):
         xyzr_file.write(line[5]+"\t"+line[6]+"\t"+line[7]+"\t"+line[9]+"\n")
     pqr_file.close()
     xyzr_file.close()
-    
-def generate_msms_mesh(mesh_xyzr_path, output_dir, output_name, density, probe_radius):
-    path = os.path.join(output_dir, output_name)
-    command = "msms -if "+mesh_xyzr_path+" -of "+path+" -p "+str(probe_radius)+" -d "+str(density)+" -no_header"
-    os.system(command)
+
+    return None
     
 def import_msms_mesh(mesh_face_path, mesh_vert_path):
+
     face = open(mesh_face_path, 'r').read()
     vert = open(mesh_vert_path, 'r').read()
 
@@ -28,30 +27,12 @@ def import_msms_mesh(mesh_face_path, mesh_vert_path):
 
     #grid = bempp.api.grid_from_element_data(verts.transpose(), faces.transpose())
     grid = bempp.api.Grid(verts.transpose(), faces.transpose())
-    return grid
 
-def convert_msms2off(mesh_face_path, mesh_vert_path, mesh_off_path):
-    face = open(mesh_face_path, 'r').read()
-    vert = open(mesh_vert_path, 'r').read()
-
-    faces = np.vstack(np.char.split(face.split('\n')[0:-1]))[:, :3].astype(int) - 1
-    verts = np.vstack(np.char.split(vert.split('\n')[0:-1]))[:, :3].astype(float)
-
-    data = open(mesh_off_path, 'w')
-    data.write("OFF"+"\n")
-    data.write(str(verts.shape[0])+" "+str(faces.shape[0])+" "+str(0)+"\n")
-    for vert in verts:
-        data.write(str(vert[0])+" "+str(vert[1])+" "+str(vert[2])+"\n")
-    for face in faces:
-        data.write("3"+" "+str(face[0])+" "+str(face[1])+" "+str(face[2])+"\n")
-
-def import_off_mesh(mesh_off_path):
-    grid = bempp.api.import_grid(mesh_off_path)
     return grid
 
 def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, output_name, density, probe_radius, save_mesh_build_files):
     
-    nanoshaper_dir = "C:\\APBS-3.0.0\\bin"
+    nanoshaper_dir = "C:\\APBS-3.0.0\\bin" #NanoShaper dir for windows!
     nanoshaper_temp_dir = os.path.join(output_dir, "nano\\")
     mesh_dir = output_dir
 
@@ -100,12 +81,10 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     face_file.close()
 
     os.chdir(nanoshaper_temp_dir)
-    os.remove('exposed.xyz')
-    os.remove('exposedIndices.txt')
-    os.remove('stderror.txt')
-    os.remove('surfaceConfiguration.prm')
     os.chdir('..')
-    os.rmdir('nano')
+    os.system('powershell rm -r nano')
+
+    return None
 
 
 def pqrtomesh(directory,protein,forcefield,density,probe_radius,build_mesh='yes'):

@@ -35,3 +35,7 @@ DelphiForce_pqr/*.txt
 APBS/sphere_point/*
 results/*
 DelphiForce_pqr/results_DelphiForce/*
+example_forcecalc_1surface.ipynb
+example_forcecalc_2surface.ipynb
+example_forcecalc_1surface.ipynb
+Force_calculation_interno.ipynb
