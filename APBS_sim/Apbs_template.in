@@ -1,12 +1,12 @@
 read
-mol pqr C:\Users\ian\Desktop\forces_calculation\pqr_files\1lyz\1lyz_amber.pqr 
+mol pqr "C:\Users\ian\Desktop\forces_calculation\pqr_files\sphere\sphere_symmetric.pqr"
 
 end
 
 elec name reference
 mg-manual
-dime 350 350 350 
-glen 70 70 70 
+dime 150 150 150
+glen 20 20 20
 lpbe
 pdie 4.0
 sdie 4.0
@@ -14,19 +14,20 @@ bcfl mdh
 gcent mol 1
 mol 1
 chgm spl2
-srfm mol 
+srfm mol
 srad 1.4
 swin 0.3
 sdens 20.0
 temp 298.15
 calcenergy total
-write pot dx pot_ref_1lyz_amber_350_70_mol 
+calcforce total
+write pot dx no
 end
 
 elec name solvated
 mg-manual
-dime 350 350 350 
-glen 70 70 70 
+dime 150 150 150
+glen 20 20 20
 lpbe
 pdie 4.0
 sdie 80.0
@@ -36,13 +37,14 @@ ion -1.0 0.150 1.4
 gcent mol 1
 mol 1
 chgm spl2
-srfm mol 
+srfm mol
 srad 1.4
 swin 0.3
 sdens 20.0
 temp 298.15
 calcenergy total
-write pot dx pot_sol_1lyz_amber_350_70_mol 
+calcforce total
+write pot dx no
 end
 
 print elecEnergy solvated - reference end

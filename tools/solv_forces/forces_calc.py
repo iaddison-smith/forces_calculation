@@ -3,7 +3,7 @@ import os
 import bempp.api
 
 
-def solvent_potential_first_derivate(xq, h, neumann_space, dirichl_space, solution_neumann, solution_dirichl):
+def solvent_potential_first_derivate(dirichl_space, neumann_space, solution_dirichl, solution_neumann, xq, h):
     
     #Function from https://github.com/bem4solvation/Multipoles_calculations_python
     """
@@ -55,13 +55,13 @@ def solvent_potential_first_derivate(xq, h, neumann_space, dirichl_space, soluti
 
     return dpdr
  
-def fixed_charge_forces(solution_neumann,solution_dirichl,neumann_space,dirichl_space,x_q,q,h=0.001):
+def fixed_charge_forces(solution_dirichl,solution_neumann,dirichl_space,neumann_space,x_q,q,h=0.001):
     
     convert_to_kcalmolA = 4 * np.pi * 332.0636817823836 #1e-3*Na*1e10*(qe**2/(ep_vacc*4*numpy.pi*cal2J))
     kcal_to_kJ = 4.184
 
     #fixed_charge_forces calculations
-    grad_phi = solvent_potential_first_derivate(x_q, h, neumann_space, dirichl_space, solution_neumann, solution_dirichl)
+    grad_phi = solvent_potential_first_derivate(dirichl_space, neumann_space, solution_dirichl, solution_neumann, x_q, h)
     f_reac = np.zeros([len(q),3])
     for j in range(len(q)):
         f_reac[j,:] = -q[j]*grad_phi[j,:]
@@ -74,7 +74,7 @@ def fixed_charge_forces(solution_neumann,solution_dirichl,neumann_space,dirichl_
 
     return f_reactotal, f_reac, Efield
 
-def boundary_forces(solution_neumann,solution_dirichl,grid,k,ep_ex,ep_in):
+def boundary_forces(solution_dirichl,solution_neumann,grid,ep_in,ep_ex,k):
 
     convert_to_kcalmolA = 4 * np.pi * 332.0636817823836 #1e-3*Na*1e10*(qe**2/(ep_vacc*4*numpy.pi*cal2J))
     kcal_to_kJ = 4.184

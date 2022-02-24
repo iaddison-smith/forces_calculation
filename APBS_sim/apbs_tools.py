@@ -2,13 +2,28 @@ import numpy as np
 import os
 import griddata
 
-def apbs_simulation(protein,pqr_path,apbs_dir,dime_len,grid_len,mol_surface,calc_force,write_dx):
+def apbs_simulation(protein,pqr_path,dime_len=100,grid_len=30,mol_surface='spl4',calc_force='yes',write_dx='no'):
 
-    apbs_template_file = open(apbs_dir + '\\Apbs_template.in', 'r')
-    apbs_file = open(apbs_dir + '\\Apbs_simulation.in','w')
+    '''
+    Runs a simulation with APBS installed using a Apbs_template file:
+
+    protein : name of the protein
+    pqr_path : path of the pqr file
+    dime_len = length of the box
+    grid_len = number of grid points in dime_len
+    mol_surface = spl4 or mol
+    calc_force = calculate forces with APBS
+    write_dx = write potential across the domain in dx format 
+    '''
+
+    if calc_force == 'yes' and mol_surface == 'mol':
+        print('mol surfaces dont calculate forces in APBS!!!')
+
+    apbs_template_file = open('APBS_sim\\Apbs_template.in', 'r')
+    apbs_file = open('APBS_sim\\Apbs_simulation.in','w')
     for line in apbs_template_file:
         if 'mol pqr' in line:
-            line = 'mol pqr '+pqr_path + ' \n'
+            line = 'mol pqr '+ pqr_path + ' \n'
         elif 'elec name' in line:
             status = line[10:13]
         elif 'dime' in line:
@@ -22,13 +37,15 @@ def apbs_simulation(protein,pqr_path,apbs_dir,dime_len,grid_len,mol_surface,calc
         elif 'calcforce' in line and calc_force=='no':
             line = ''
         elif 'write pot' in line and write_dx=='yes':
-            line = 'write pot dx pot_'+status+'_'+protein+'_'+str(dime_len)+'_'+str(grid_len)+'_'+str(mol_surface)+' \n'
+            line = 'write pot dx APBS_sim\\{}\\pot_{}_{}_{}_{}_{} \n'.format(protein,status,protein,str(dime_len),\
+                str(grid_len),str(mol_surface))
+        elif 'write pot' in line and write_dx=='no':
+            line = ''
         apbs_file.write(line)
     apbs_file.close()
     apbs_template_file.close()
-    simul_data = protein+'_'+str(dime_len)+'_'+str(grid_len)+'_'+str(mol_surface)+'.txt'
-    os.chdir(apbs_dir)
-    os.system('apbs Apbs_simulation.in > '+simul_data)
+    simul_data = 'APBS_sim\\{}\\{}_{}_{}_{}.txt'.format(protein,protein,str(dime_len),str(grid_len),str(mol_surface))
+    os.system('apbs APBS_sim\\Apbs_simulation.in > '+simul_data)
     
     return None
 

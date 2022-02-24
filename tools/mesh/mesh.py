@@ -4,9 +4,11 @@ import bempp.api
 
 def convert_pqr2xyzr(mesh_pqr_path, mesh_xyzr_path):
 
-    pqr_file = open(mesh_pqr_path, 'r')
+
+    source = os.getcwd()
+    pqr_file = open(source + '\\' + mesh_pqr_path, 'r')
     pqr_data = pqr_file.read().split('\n')
-    xyzr_file = open(mesh_xyzr_path, 'w')
+    xyzr_file = open(source + '\\' + mesh_xyzr_path, 'w')
     for line in pqr_data:
         line = line.split()
         if len(line) == 0 or line[0] != 'ATOM':
@@ -14,6 +16,8 @@ def convert_pqr2xyzr(mesh_pqr_path, mesh_xyzr_path):
         xyzr_file.write(line[5]+"\t"+line[6]+"\t"+line[7]+"\t"+line[9]+"\n")
     pqr_file.close()
     xyzr_file.close()
+
+    os.chdir
 
     return None
     
@@ -30,21 +34,26 @@ def import_msms_mesh(mesh_face_path, mesh_vert_path):
 
     return grid
 
-def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, output_name, density, probe_radius, save_mesh_build_files):
+def generate_nanoshaper_mesh(output_dir, input_name, density=1.0, probe_radius=1.4, save_mesh_build_files=False):
     
     nanoshaper_dir = "C:\\APBS-3.0.0\\bin" #NanoShaper dir for windows!
-    nanoshaper_temp_dir = os.path.join(output_dir, "nano\\")
+    direc = os.getcwd()
+    nanoshaper_temp_dir = os.path.join(direc+'\\'+output_dir, "nano")
     mesh_dir = output_dir
+    if density < 10.0:
+        output_name = input_name + '_' +'d'+str(density)[::2]
+    else:
+        output_name = input_name + '_' +'d'+str(density)[:2]+'0'
 
     if not os.path.exists(nanoshaper_temp_dir):
         os.makedirs(nanoshaper_temp_dir)
 
     # Execute NanoShaper
     config_template_file = open(nanoshaper_dir+'\\config', 'r')
-    config_file = open(nanoshaper_temp_dir + 'surfaceConfiguration.prm', 'w')
+    config_file = open(nanoshaper_temp_dir + '\\surfaceConfiguration.prm', 'w')
     for line in config_template_file:
         if 'XYZR_FileName' in line:
-            path = os.path.join(mesh_dir, output_name_temp +'.xyzr')
+            path = os.path.join(direc +'\\'+ mesh_dir, input_name +'.xyzr')
             line = 'XYZR_FileName = ' + path + ' \n'
         elif 'Grid_scale' in line:
             line = 'Grid_scale = {:04.1f} \n'.format(density)
@@ -57,11 +66,11 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     config_template_file.close()
 
     os.chdir(nanoshaper_temp_dir)
-    os.system(nanoshaper_dir+"\\Nanoshaper")
+    os.system("Nanoshaper")
     os.chdir('..')
     
-    os.system('move ' + nanoshaper_temp_dir + 'triangulatedSurf.vert  ' + output_name + '.vert')
-    os.system('move ' + nanoshaper_temp_dir + 'triangulatedSurf.face  ' + output_name + '.face')
+    os.system('move nano\\triangulatedSurf.vert  ' + output_name + '.vert')
+    os.system('move nano\\triangulatedSurf.face  ' + output_name + '.face')
     
     vert_file = open(output_name + '.vert', 'r')
     vert = vert_file.readlines()
@@ -80,39 +89,40 @@ def generate_nanoshaper_mesh(mesh_xyzr_path, output_dir, output_name_temp, outpu
     face_file.write(''.join(face[3:]))
     face_file.close()
 
-    os.chdir(nanoshaper_temp_dir)
+    if save_mesh_build_files==False:
+        os.system('powershell rm -r nano')
+    
     os.chdir('..')
-    os.system('powershell rm -r nano')
+    os.chdir('..')
 
     return None
 
 
-def pqrtomesh(directory,protein,forcefield,density,probe_radius,build_mesh='yes'):
+def pqrtomesh(folder,protein,forcefield,density_mesh=1.0,probe_radius_mesh=1.4,build_mesh=True):
 
-    dir_prot = directory + '\\pqr_files\\' + protein
     pf = protein +'_' + forcefield
-    if density < 10.0:
-        pfd = protein +'_' + forcefield + '_' +'d'+str(density)[::2]
+    if density_mesh < 10.0:
+        pfd = protein +'_' + forcefield + '_' +'d'+str(density_mesh)[::2]
     else:
-        pfd = protein +'_' + forcefield + '_' +'d'+str(density)[:2]+'0'
-    if build_mesh=='yes':
-        convert_pqr2xyzr('{}/{}.pqr'.format(dir_prot,pf),'{}/{}.xyzr'.format(dir_prot,pf))
-        generate_nanoshaper_mesh('{}/{}.xyzr'.format(dir_prot,pf),dir_prot,pf,pfd,density,probe_radius,False)
-        grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pfd),'{}/{}.vert'.format(dir_prot,pfd))
+        pfd = protein +'_' + forcefield + '_' +'d'+str(density_mesh)[:2]+'0'
+    if build_mesh==True:
+        convert_pqr2xyzr('{}\\{}.pqr'.format(folder,pf),'{}\\{}.xyzr'.format(folder,pf))
+        generate_nanoshaper_mesh(folder,pf,density=density_mesh,probe_radius=probe_radius_mesh)
+        grid = import_msms_mesh('{}\\{}.face'.format(folder,pfd),'{}\\{}.vert'.format(folder,pfd))
     else:
-        grid = import_msms_mesh('{}/{}.face'.format(dir_prot,pfd),'{}/{}.vert'.format(dir_prot,pfd))
+        grid = import_msms_mesh('{}\\{}.face'.format(folder,pfd),'{}\\{}.vert'.format(folder,pfd))
         
     q, x_q = np.array([]), np.empty((0,3))
-    molecule_file = open('{}/{}.pqr'.format(dir_prot,pf), 'r').read().split('\n')
+    molecule_file = open('{}\\{}.pqr'.format(folder,pf), 'r').read().split('\n')
     for line in molecule_file:
         line = line.split()
         if len(line)==0 or line[0]!='ATOM': continue
         q = np.append( q, float(line[8]))
-        x_q = np.vstack(( x_q, np.array(line[5:8]).astype(float) ))
+        x_q = np.vstack(( x_q, np.array(line[5:8]).astype(float)))
     
     return grid, q, x_q
 
-def mesh_translate(directory, protein, ff_ref, gs, distance):
+def mesh_translate(folder, protein, ff_ref, gs, distance):
 
     ff = ff_ref+'_t'+str(distance[0])
     if gs < 10.0:
@@ -122,11 +132,10 @@ def mesh_translate(directory, protein, ff_ref, gs, distance):
     file_ref = protein+'_'+ff_ref+'_'+gs_str
     file = protein + '_' + ff + '_' + gs_str
 
-    dir_prot = directory + '\\pqr_files\\' + protein
-    mesh_face_path = '{}\\{}.face'.format(dir_prot,file_ref)
-    mesh_face_path_out = '{}\\{}.face'.format(dir_prot,file)
-    mesh_vert_path = '{}\\{}.vert'.format(dir_prot,file_ref)
-    mesh_vert_path_out = '{}\\{}.vert'.format(dir_prot,file)
+    mesh_face_path = '{}\\{}.face'.format(folder,file_ref)
+    mesh_face_path_out = '{}\\{}.face'.format(folder,file)
+    mesh_vert_path = '{}\\{}.vert'.format(folder,file_ref)
+    mesh_vert_path_out = '{}\\{}.vert'.format(folder,file)
 
     face_file = open(mesh_face_path, 'r')
     face_data = face_file.read().split('\n')
@@ -148,7 +157,8 @@ def mesh_translate(directory, protein, ff_ref, gs, distance):
         y_new = float(line[1])+ float(ty)
         z_new = float(line[2])+ float(tz)
         text_template = '    {: 1.3f}    {: 1.3f}    {: 1.3f}    {: 1.3f}    {: 1.3f}    {: 1.3f}       {}       {}  {} \n'
-        vert_t_file.write(text_template.format(x_new,y_new,z_new,float(line[3]),float(line[4]),float(line[5]),line[6],line[7],line[8]))
+        vert_t_file.write(text_template.format(x_new,y_new,z_new,float(line[3]),float(line[4]),\
+            float(line[5]),line[6],line[7],line[8]))
 
     face_file.close() 
     vert_file.close()
@@ -157,14 +167,13 @@ def mesh_translate(directory, protein, ff_ref, gs, distance):
 
     return None
 
-def pqr_translate(directory, protein, ff_ref, distance):
+def pqr_translate(folder, protein, ff_ref, distance):
 
     ff = ff_ref+'_t'+str(distance[0])
     file_ref_pqr = protein + '_' + ff_ref
     file_pqr = protein + '_' + ff
-    dir_prot = directory + '\\pqr_files\\' + protein
-    mesh_pqr_path = '{}\\{}.pqr'.format(dir_prot,file_ref_pqr)
-    mesh_pqr_path_out = '{}\\{}.pqr'.format(dir_prot,file_pqr)
+    mesh_pqr_path = '{}\\{}.pqr'.format(folder,file_ref_pqr)
+    mesh_pqr_path_out = '{}\\{}.pqr'.format(folder,file_pqr)
 
     pqr_file = open(mesh_pqr_path, 'r')
     pqr_data = pqr_file.read().split('\n')
